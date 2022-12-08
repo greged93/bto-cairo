@@ -35,7 +35,7 @@ namespace BinaryOperatorTree {
             let value_right = iterate_tree(tree + right * ns_tree.TREE_SIZE);
             return value_left - value_right;
         }
-        if (value == ns_opcodes.MULT) {
+        if (value == ns_opcodes.MUL) {
             let value_left = iterate_tree(tree + left * ns_tree.TREE_SIZE);
             let value_right = iterate_tree(tree + right * ns_tree.TREE_SIZE);
             return value_left * value_right;

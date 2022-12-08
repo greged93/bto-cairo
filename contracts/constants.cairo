@@ -3,7 +3,7 @@
 namespace ns_opcodes {
     const ADD = 1;
     const SUB = 2;
-    const MULT = 3;
+    const MUL = 3;
     const DIV = 4;
     const MOD = 5;
     const ABS = 6;
