@@ -26,4 +26,6 @@ A node is represented by the following structure, where left and right hold the 
 ```
 
 The following is the array representatin of the previous tree:
-`[ \{is\_le, 1, 12\}, \{add, 1, 6\}, \{mul, 1, 4\}, \{pow, 1, 2\}, \\ \{a, -1, -1,\}, \{b, -1, -1\}, \{c, -1, -1\}, \{div, 1, 2\},  \\ \{d, -1, -1\}, \{mod, 1, 2\}, \{e, -1, -,1\}, \{f, -1, -1\}, \\ \{abs, -1, 1\}, \{g, -1, -1\}]`
+```
+[{is_le, 1, 12}, {add, 1, 6}, {mul, 1, 4}, {pow, 1, 2}, {a, -1, -1}, {b, -1, -1}, {c, -1, -1}, {div, 1, 2}, {d, -1, -1}, {mod, 1, 2}, {e, -1, -1}, {f, -1, -1}, {abs, -1, 1}, {g, -1, -1}]
+```
