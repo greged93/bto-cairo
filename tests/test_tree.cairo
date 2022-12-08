@@ -256,6 +256,29 @@ func test_iterate_tree_is_le{range_check_ptr}() {
 }
 
 @external
+func test_iterate_tree_not{range_check_ptr}() {
+    // test case:
+    // Tree
+    //           not(0)
+    //            |
+    //         mul(1)
+    //       /      \
+    //     not(2)   -1(4)
+    //       |
+    //      1(3)
+    alloc_locals;
+    let (local tree: Tree*) = alloc();
+    assert tree[0] = Tree(ns_opcodes.NOT, -1, 1);
+    assert tree[1] = Tree(ns_opcodes.MUL, 1, 3);
+    assert tree[2] = Tree(ns_opcodes.NOT, -1, 1);
+    assert tree[3] = Tree(1, -1, -1);
+    assert tree[4] = Tree(-1, -1, -1);
+    let result = BinaryOperatorTree.iterate_tree(tree);
+    assert result = 1;
+    return ();
+}
+
+@external
 func test_iterate_tree{range_check_ptr}() {
     // test case:
     // Tree
