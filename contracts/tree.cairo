@@ -82,6 +82,14 @@ namespace BinaryOperatorTree {
             }
             return 0;
         }
+        if (value == ns_opcodes.EQ) {
+            let value_right = iterate_tree(tree + right * ns_tree.TREE_SIZE);
+            let value_left = iterate_tree(tree + left * ns_tree.TREE_SIZE);
+            if (value_right == value_left) {
+                return 1;
+            }
+            return 0;
+        }
         with_attr error_message("unknown opcode {value}") {
             assert 0 = 1;
         }

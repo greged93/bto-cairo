@@ -12,6 +12,7 @@ namespace ns_opcodes {
     const IS_NN = 9;
     const IS_LE = 10;
     const NOT = 11;
+    const EQ = 11;
 }
 
 namespace ns_tree {
