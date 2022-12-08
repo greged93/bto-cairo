@@ -75,6 +75,13 @@ namespace BinaryOperatorTree {
             let value_right = iterate_tree(tree + right * ns_tree.TREE_SIZE);
             return is_le(value_left, value_right);
         }
+        if (value == ns_opcodes.NOT and left == -1) {
+            let value_right = iterate_tree(tree + right * ns_tree.TREE_SIZE);
+            if (value_right == 0) {
+                return 1;
+            }
+            return 0;
+        }
         with_attr error_message("unknown opcode {value}") {
             assert 0 = 1;
         }
