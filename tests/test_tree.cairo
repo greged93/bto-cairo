@@ -74,9 +74,9 @@ func test_iterate_tree_mul{range_check_ptr}() {
     // 13(3) 15(3)
     alloc_locals;
     let (local tree: Tree*) = alloc();
-    assert tree[0] = Tree(ns_opcodes.MULT, 1, 6);
-    assert tree[1] = Tree(ns_opcodes.MULT, 1, 4);
-    assert tree[2] = Tree(ns_opcodes.MULT, 1, 2);
+    assert tree[0] = Tree(ns_opcodes.MUL, 1, 6);
+    assert tree[1] = Tree(ns_opcodes.MUL, 1, 4);
+    assert tree[2] = Tree(ns_opcodes.MUL, 1, 2);
     assert tree[3] = Tree(13, -1, -1);
     assert tree[4] = Tree(15, -1, -1);
     assert tree[5] = Tree(9, -1, -1);
@@ -150,7 +150,7 @@ func test_iterate_tree_abs{range_check_ptr}() {
     alloc_locals;
     let (local tree: Tree*) = alloc();
     assert tree[0] = Tree(ns_opcodes.ABS, -1, 1);
-    assert tree[1] = Tree(ns_opcodes.MULT, 1, 3);
+    assert tree[1] = Tree(ns_opcodes.MUL, 1, 3);
     assert tree[2] = Tree(ns_opcodes.ABS, -1, 1);
     assert tree[3] = Tree(-100, -1, -1);
     assert tree[4] = Tree(-2, -1, -1);
@@ -173,7 +173,7 @@ func test_iterate_tree_sqrt{range_check_ptr}() {
     alloc_locals;
     let (local tree: Tree*) = alloc();
     assert tree[0] = Tree(ns_opcodes.SQRT, -1, 1);
-    assert tree[1] = Tree(ns_opcodes.MULT, 1, 3);
+    assert tree[1] = Tree(ns_opcodes.MUL, 1, 3);
     assert tree[2] = Tree(ns_opcodes.SQRT, -1, 1);
     assert tree[3] = Tree(400, -1, -1);
     assert tree[4] = Tree(5, -1, -1);
@@ -221,7 +221,7 @@ func test_iterate_tree_is_nn{range_check_ptr}() {
     alloc_locals;
     let (local tree: Tree*) = alloc();
     assert tree[0] = Tree(ns_opcodes.IS_NN, -1, 1);
-    assert tree[1] = Tree(ns_opcodes.MULT, 1, 3);
+    assert tree[1] = Tree(ns_opcodes.MUL, 1, 3);
     assert tree[2] = Tree(ns_opcodes.IS_NN, -1, 1);
     assert tree[3] = Tree(10, -1, -1);
     assert tree[4] = Tree(-1, -1, -1);
@@ -252,5 +252,43 @@ func test_iterate_tree_is_le{range_check_ptr}() {
     assert tree[6] = Tree(0, -1, -1);
     let result = BinaryOperatorTree.iterate_tree(tree);
     assert result = 0;
+    return ();
+}
+
+@external
+func test_iterate_tree{range_check_ptr}() {
+    // test case:
+    // Tree
+    //                  mul(0)
+    //               /          \
+    //            add(1)       abs(12)
+    //           /     \           \
+    //       is_le(2)  div(7)       sub(13)
+    //      /  \         /  \         /     \
+    // pow(3) 128(6)  260(8) mod(9) is_nn(14) sqrt(16)
+    //   / \                 /   \       |          |
+    // 2(4) 6(5)      350(10) 48(11)  33(15)    400(17)
+    alloc_locals;
+    let (local tree: Tree*) = alloc();
+    assert tree[0] = Tree(ns_opcodes.MUL, 1, 12);
+    assert tree[1] = Tree(ns_opcodes.ADD, 1, 6);
+    assert tree[2] = Tree(ns_opcodes.IS_LE, 1, 4);
+    assert tree[3] = Tree(ns_opcodes.POW, 1, 2);
+    assert tree[4] = Tree(2, -1, -1);
+    assert tree[5] = Tree(6, -1, -1);
+    assert tree[6] = Tree(128, -1, -1);
+    assert tree[7] = Tree(ns_opcodes.DIV, 1, 2);
+    assert tree[8] = Tree(260, -1, -1);
+    assert tree[9] = Tree(ns_opcodes.MOD, 1, 2);
+    assert tree[10] = Tree(350, -1, -1);
+    assert tree[11] = Tree(48, -1, -1);
+    assert tree[12] = Tree(ns_opcodes.ABS, -1, 1);
+    assert tree[13] = Tree(ns_opcodes.SUB, 1, 3);
+    assert tree[14] = Tree(ns_opcodes.IS_NN, -1, 1);
+    assert tree[15] = Tree(33, -1, -1);
+    assert tree[16] = Tree(ns_opcodes.SQRT, -1, 1);
+    assert tree[17] = Tree(400, -1, -1);
+    let result = BinaryOperatorTree.iterate_tree(tree);
+    assert result = 361;
     return ();
 }
