@@ -18,20 +18,21 @@ namespace BinaryOperatorTree {
     // @param trees The binary operator trees to chain
     // @param mem The chain memory used to retain tree outputs
     // @return The final evaluation of the binary tree operator chain
-    func execute_tree_chain(
+    func execute_tree_chain{range_check_ptr}(
         trees_offset_len: felt, trees_offset: felt*, trees: Tree*, mem_len: felt, mem: felt*
     ) -> felt {
         if (trees_offset_len == 0) {
             return [mem + mem_len - 1];
         }
-        assert [mem + mem_len] = iterate_tree(trees, mem);
+        let output = iterate_tree(trees, mem);
+        assert [mem + mem_len] = output;
         tempvar offset = [trees_offset];
-        execute_tree_chain(
+        return execute_tree_chain(
             trees_offset_len=trees_offset_len - 1,
             trees_offset=trees_offset + 1,
             trees=trees + ns_tree.TREE_SIZE * offset,
             mem_len=mem_len + 1,
-            mem,
+            mem=mem,
         );
     }
     // @param tree The binary operator tree to iterate
