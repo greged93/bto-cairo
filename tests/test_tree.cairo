@@ -316,6 +316,36 @@ func test_iterate_tree_eq{range_check_ptr}() {
 }
 
 @external
+func test_iterate_tree_mem{range_check_ptr}() {
+    // test case:
+    // Tree
+    //           mem(0)
+    //            |
+    //         mul(1)
+    //       /      \
+    //     mem(2)   2(4)
+    //       |
+    //      1(3)
+    alloc_locals;
+    let (local tree: Tree*) = alloc();
+    let (local mem: felt*) = alloc();
+    assert mem[0] = 1;
+    assert mem[1] = 2;
+    assert mem[2] = 3;
+    assert mem[3] = 4;
+    assert mem[4] = 5;
+    assert mem[5] = 6;
+    assert tree[0] = Tree(ns_opcodes.MEM, -1, 1);
+    assert tree[1] = Tree(ns_opcodes.MUL, 1, 3);
+    assert tree[2] = Tree(ns_opcodes.MEM, -1, 1);
+    assert tree[3] = Tree(1, -1, -1);
+    assert tree[4] = Tree(2, -1, -1);
+    let result = BinaryOperatorTree.iterate_tree(tree, mem);
+    assert result = 5;
+    return ();
+}
+
+@external
 func test_iterate_tree{range_check_ptr}() {
     // test case:
     // Tree
