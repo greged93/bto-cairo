@@ -12,17 +12,30 @@ export default function parse(state: StateMachine) {
     });
 }
 
-export function parseBranch(branch: Branch) {
+export function parseStages(stages: Branch) {
     let output: any[] = [];
-    const leftBranchSize = branchSize(branch[1]) + 1;
-    output.push({ value: branch[0], left: 1, right: leftBranchSize });
-    if (typeof branch[1] === 'string') {
+    let offsets: number[] = [];
+    stages.forEach((stage) => {
+        offsets.push(branchSize(stage));
+        output = output.concat(...parseBranch(stage));
+    });
+    offsets.push(0);
+    return [output, offsets];
+}
+
+function parseBranch(branch: Branch) {
+    let output: any[] = [];
+    const size = branchSize(branch[1]);
+    const rightSize = isSingleBranch(branch[0]) ? size : size + 1;
+    const leftSize = isSingleBranch(branch[0]) ? -1 : 1;
+    output.push({ value: branch[0], left: leftSize, right: rightSize });
+    if (typeof branch[1] === 'string' && branch[1] !== '') {
         output.push({ value: branch[1], left: -1, right: -1 });
     }
     if (typeof branch[1] === 'object') {
         output = output.concat(...parseBranch(branch[1]));
     }
-    if (typeof branch[2] === 'string') {
+    if (typeof branch[2] === 'string' && branch[2] !== '') {
         output.push({ value: branch[2], left: -1, right: -1 });
     }
     if (typeof branch[2] === 'object') {
@@ -38,10 +51,23 @@ export function branchSize(branch: Branch) {
     }
     branch.forEach((b) => {
         if (typeof b === 'string') {
-            count++;
+            b !== '' ? count++ : false;
         } else {
             count += branchSize(b);
         }
     });
     return count;
+}
+
+function isSingleBranch(branch: string) {
+    if (
+        branch == 'ABS' ||
+        branch == 'MEM' ||
+        branch == 'SQRT' ||
+        branch == 'NOT' ||
+        branch == 'IS_NN'
+    ) {
+        return true;
+    }
+    return false;
 }
