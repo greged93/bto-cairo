@@ -9,11 +9,14 @@ namespace ns_opcodes {
     const ABS = 6;
     const SQRT = 7;
     const POW = 8;
+
     const IS_NN = 9;
     const IS_LE = 10;
     const NOT = 11;
     const EQ = 11;
+
     const MEM = 12;
+    const DICT = 13;
 }
 
 namespace ns_tree {
