@@ -28,15 +28,19 @@ function parseBranch(branch: Branch) {
     const size = branchSize(branch[1]);
     const rightSize = isSingleBranch(branch[0]) ? size : size + 1;
     const leftSize = isSingleBranch(branch[0]) ? -1 : 1;
-    output.push({ value: branch[0], left: leftSize, right: rightSize });
+    output.push({
+        value: stringToOpcode(branch[0]),
+        left: leftSize,
+        right: rightSize,
+    });
     if (typeof branch[1] === 'string' && branch[1] !== '') {
-        output.push({ value: branch[1], left: -1, right: -1 });
+        output.push({ value: stringToOpcode(branch[1]), left: -1, right: -1 });
     }
     if (typeof branch[1] === 'object') {
         output = output.concat(...parseBranch(branch[1]));
     }
     if (typeof branch[2] === 'string' && branch[2] !== '') {
-        output.push({ value: branch[2], left: -1, right: -1 });
+        output.push({ value: stringToOpcode(branch[2]), left: -1, right: -1 });
     }
     if (typeof branch[2] === 'object') {
         output = output.concat(...parseBranch(branch[2]));
@@ -63,6 +67,7 @@ function isSingleBranch(branch: string) {
     if (
         branch == 'ABS' ||
         branch == 'MEM' ||
+        branch == 'DICT' ||
         branch == 'SQRT' ||
         branch == 'NOT' ||
         branch == 'IS_NN'
@@ -70,4 +75,28 @@ function isSingleBranch(branch: string) {
         return true;
     }
     return false;
+}
+
+const opcodes = {
+    ADD: 1,
+    SUB: 2,
+    MUL: 3,
+    DIV: 4,
+    MOD: 5,
+    ABS: 6,
+    SQRT: 7,
+    POW: 8,
+    IS_NN: 9,
+    IS_LE: 10,
+    NOT: 11,
+    EQ: 12,
+    MEM: 13,
+    DICT: 14,
+};
+
+function stringToOpcode(branch: string) {
+    if (Number.isNaN(Number(branch))) {
+        return opcodes[branch];
+    }
+    return parseInt(branch);
 }

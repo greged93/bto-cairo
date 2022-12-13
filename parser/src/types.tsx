@@ -10,7 +10,7 @@ export interface StateFunction {
 export type Branch = any[];
 
 export interface Node {
-    value: string;
+    value: number | string;
     left: number;
     right: number;
 }
