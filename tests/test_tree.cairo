@@ -3,6 +3,7 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.default_dict import default_dict_new, default_dict_finalize
+from starkware.cairo.common.dict import dict_write
 
 from contracts.tree import BinaryOperatorTree, Tree
 from contracts.constants import ns_opcodes, ns_tree
@@ -412,6 +413,37 @@ func test_iterate_tree_mem{range_check_ptr}() {
 }
 
 @external
+func test_iterate_tree_dict{range_check_ptr}() {
+    // test case:
+    // Tree
+    //           dict(0)
+    //            |
+    //         mul(1)
+    //       /      \
+    //     dict(2)   2(4)
+    //       |
+    //      100(3)
+    alloc_locals;
+    let (local tree: Tree*) = alloc();
+    let (local mem: felt*) = alloc();
+    assert tree[0] = Tree(ns_opcodes.DICT, -1, 1);
+    assert tree[1] = Tree(ns_opcodes.MUL, 1, 3);
+    assert tree[2] = Tree(ns_opcodes.DICT, -1, 1);
+    assert tree[3] = Tree(100, -1, -1);
+    assert tree[4] = Tree(2, -1, -1);
+
+    let (dict) = default_dict_new(default_value=0);
+    dict_write{dict_ptr=dict}(key=100, new_value=22);
+    dict_write{dict_ptr=dict}(key=44, new_value=17);
+    let (result, dict_new) = BinaryOperatorTree.iterate_tree(tree, mem, dict);
+    assert result = 17;
+    default_dict_finalize(
+        dict_accesses_start=dict_new, dict_accesses_end=dict_new, default_value=0
+    );
+    return ();
+}
+
+@external
 func test_iterate_tree{range_check_ptr}() {
     // test case:
     // Tree
@@ -423,9 +455,9 @@ func test_iterate_tree{range_check_ptr}() {
     //      /  \         /  \           /     \
     // pow(3) 128(9) 260(11) mod(12) is_nn(17) sqrt(23)
     //   / \                 /   \       |          |
-    // 2(4) add(5)      350(13) 48(14)  mul(18)    400(24)
-    //      /  \                        /  \
-    //   not(6) 5(8)                 eq(19) 33(22)
+    // 2(4) add(5)      350(13) 48(14)  mul(18)    dict(24)
+    //      /  \                        /  \         |
+    //   not(6) 5(8)                 eq(19) 33(22)  10(15)
     //    |                          /  \
     //   0(7)                    10(20) 10(21)
     alloc_locals;
@@ -455,9 +487,11 @@ func test_iterate_tree{range_check_ptr}() {
     assert tree[21] = Tree(10, -1, -1);
     assert tree[22] = Tree(33, -1, -1);
     assert tree[23] = Tree(ns_opcodes.SQRT, -1, 1);
-    assert tree[24] = Tree(400, -1, -1);
+    assert tree[24] = Tree(ns_opcodes.DICT, -1, 1);
+    assert tree[25] = Tree(10, -1, -1);
 
     let (dict) = default_dict_new(default_value=0);
+    dict_write{dict_ptr=dict}(key=10, new_value=400);
     let (result, dict_new) = BinaryOperatorTree.iterate_tree(tree, mem, dict);
     assert result = 361;
     default_dict_finalize(
@@ -480,9 +514,9 @@ func test_execute_tree_chain{range_check_ptr}() {
     //      /  \         /  \           /     \
     // pow(3) 128(9) 150(11) mod(12) is_nn(19) sqrt(25)
     //   / \                 /   \       |          |
-    // 2(4) add(5)      350(13) 48(14)  mul(20)    400(26)
-    //      /  \                        /  \
-    //   not(6) 5(8)                 eq(21) 33(24)
+    // 2(4) add(5)      350(13) 48(14)  mul(20)    dict(26)
+    //      /  \                        /  \         |
+    //   not(6) 5(8)                 eq(21) 33(24)  10(27)
     //    |                          /  \
     //   0(7)                    10(22) 10(23)
     // Tree 2:
@@ -504,7 +538,7 @@ func test_execute_tree_chain{range_check_ptr}() {
     let (local mem: felt*) = alloc();
     let (local offset: felt*) = alloc();
     // offset
-    assert offset[0] = 27;
+    assert offset[0] = 28;
     assert offset[1] = 0;
     // Tree 1
     assert tree[0] = Tree(ns_opcodes.MUL, 1, 15);
@@ -533,32 +567,34 @@ func test_execute_tree_chain{range_check_ptr}() {
     assert tree[23] = Tree(10, -1, -1);
     assert tree[24] = Tree(33, -1, -1);
     assert tree[25] = Tree(ns_opcodes.SQRT, -1, 1);
-    assert tree[26] = Tree(400, -1, -1);
+    assert tree[26] = Tree(ns_opcodes.DICT, -1, 1);
+    assert tree[27] = Tree(10, -1, -1);
     // Tree 2
-    assert tree[27] = Tree(ns_opcodes.MUL, 1, 13);
-    assert tree[28] = Tree(ns_opcodes.MUL, 1, 7);
-    assert tree[29] = Tree(ns_opcodes.IS_LE, 1, 5);
-    assert tree[30] = Tree(ns_opcodes.POW, 1, 2);
-    assert tree[31] = Tree(2, -1, -1);
-    assert tree[32] = Tree(ns_opcodes.MEM, -1, 1);
-    assert tree[33] = Tree(0, -1, -1);
-    assert tree[34] = Tree(2050, -1, -1);
-    assert tree[35] = Tree(ns_opcodes.SUB, 1, 2);
-    assert tree[36] = Tree(30, -1, -1);
-    assert tree[37] = Tree(ns_opcodes.MOD, 1, 2);
-    assert tree[38] = Tree(350, -1, -1);
-    assert tree[39] = Tree(47, -1, -1);
-    assert tree[40] = Tree(ns_opcodes.ABS, -1, 1);
-    assert tree[41] = Tree(ns_opcodes.SUB, 1, 6);
-    assert tree[42] = Tree(ns_opcodes.NOT, -1, 1);
-    assert tree[43] = Tree(ns_opcodes.MUL, 1, 3);
-    assert tree[44] = Tree(ns_opcodes.MEM, -1, 1);
-    assert tree[45] = Tree(0, -1, -1);
-    assert tree[46] = Tree(3, -1, -1);
-    assert tree[47] = Tree(ns_opcodes.SQRT, -1, 1);
-    assert tree[48] = Tree(150, -1, -1);
+    assert tree[28] = Tree(ns_opcodes.MUL, 1, 13);
+    assert tree[29] = Tree(ns_opcodes.MUL, 1, 7);
+    assert tree[30] = Tree(ns_opcodes.IS_LE, 1, 5);
+    assert tree[31] = Tree(ns_opcodes.POW, 1, 2);
+    assert tree[32] = Tree(2, -1, -1);
+    assert tree[33] = Tree(ns_opcodes.MEM, -1, 1);
+    assert tree[34] = Tree(0, -1, -1);
+    assert tree[35] = Tree(2050, -1, -1);
+    assert tree[36] = Tree(ns_opcodes.SUB, 1, 2);
+    assert tree[37] = Tree(30, -1, -1);
+    assert tree[38] = Tree(ns_opcodes.MOD, 1, 2);
+    assert tree[39] = Tree(350, -1, -1);
+    assert tree[40] = Tree(47, -1, -1);
+    assert tree[41] = Tree(ns_opcodes.ABS, -1, 1);
+    assert tree[42] = Tree(ns_opcodes.SUB, 1, 6);
+    assert tree[43] = Tree(ns_opcodes.NOT, -1, 1);
+    assert tree[44] = Tree(ns_opcodes.MUL, 1, 3);
+    assert tree[45] = Tree(ns_opcodes.MEM, -1, 1);
+    assert tree[46] = Tree(0, -1, -1);
+    assert tree[47] = Tree(3, -1, -1);
+    assert tree[48] = Tree(ns_opcodes.SQRT, -1, 1);
+    assert tree[49] = Tree(150, -1, -1);
 
     let (dict) = default_dict_new(default_value=0);
+    dict_write{dict_ptr=dict}(key=10, new_value=400);
     let (result, dict_new) = BinaryOperatorTree.execute_tree_chain(2, offset, tree, 0, mem, dict);
     assert result = 108;
     default_dict_finalize(
