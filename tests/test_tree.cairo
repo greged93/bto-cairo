@@ -5,8 +5,8 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.default_dict import default_dict_new, default_dict_finalize
 from starkware.cairo.common.dict import dict_write
 
-from contracts.tree import BinaryOperatorTree, Tree
-from contracts.constants import ns_opcodes, ns_tree
+from lib.tree import BinaryOperatorTree, Tree
+from lib.constants import ns_opcodes, ns_tree
 
 @external
 func __setup__{range_check_ptr}() {

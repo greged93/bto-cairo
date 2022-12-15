@@ -7,7 +7,7 @@ from starkware.cairo.common.pow import pow
 from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.dict import dict_read
 
-from contracts.constants import ns_opcodes, ns_tree
+from lib.constants import ns_opcodes, ns_tree
 
 struct Tree {
     value: felt,
