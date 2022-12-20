@@ -17,7 +17,7 @@ namespace ns_opcodes {
 
     const MEM = 13;
     const DICT = 14;
-    const JMP = 15;
+    const FUNC = 15;
 }
 
 namespace ns_tree {
