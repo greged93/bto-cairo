@@ -20,6 +20,6 @@ namespace ns_opcodes {
     const FUNC = 15;
 }
 
-namespace ns_tree {
-    const TREE_SIZE = 3;
+namespace ns_node {
+    const NODE_SIZE = 3;
 }
