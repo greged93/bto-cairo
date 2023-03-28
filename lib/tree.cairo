@@ -48,8 +48,8 @@ namespace BinaryOperatorTree {
 
         let tree_data_system = TreeDataSystem(
             memory=MemoryAccess(mem_len=mem_len, mem=mem),
-            utility_functions_dict_new=utility_functions_dict,
-            constant_dict_new=constants_dict,
+            utility_functions_dict=utility_functions_dict,
+            constant_dict=constants_dict,
         );
 
         let (output, tree_data_system_new) = iterate_tree(trees, tree_data_system);
@@ -75,25 +75,25 @@ namespace BinaryOperatorTree {
         output: felt, tree_data_system_new: TreeDataSystem
     ) {
         alloc_locals;
+
         tempvar branch = tree[0];
         local value = branch.value;
+
         tempvar left = branch.left;
         tempvar right = branch.right;
+
         if (left == -1 and right == -1) {
             return (output=value, tree_data_system_new=tree_data_system);
         }
+
         if (value == ns_opcodes.ADD) {
-            let (value_left, tree_data_system_new) = iterate_tree(
-                tree + left * ns_node.NODE_SIZE, tree_data_system
-            );
-            let (value_right, tree_data_system_new) = iterate_tree(
-                tree + right * ns_node.NODE_SIZE, tree_data_system_new
-            );
-            return (output=value_left + value_right, tree_data_system_new=tree_data_system_new);
+            return execute_add(tree, tree_data_system);
         }
+
         with_attr error_message("unknown opcode {value}") {
             assert 0 = 1;
         }
+
         return (output=0, tree_data_system_new=tree_data_system);
         // if (value == ns_opcodes.SUB) {
         //     let (value_left, functions_new, dict_new, mem_len_new) = iterate_tree(
@@ -287,5 +287,23 @@ namespace BinaryOperatorTree {
         //         mem_len_new=mem_len_new + 1,
         //     );
         // }
+    }
+
+    func execute_add{range_check_ptr}(tree: Node*, tree_data_system: TreeDataSystem) -> (
+        output: felt, tree_data_system_new: TreeDataSystem
+    ) {
+        alloc_locals;
+
+        tempvar left_node_offset = [tree].left;
+        let (value_left, tree_data_system_new) = iterate_tree(
+            tree + left_node_offset * ns_node.NODE_SIZE, tree_data_system
+        );
+
+        tempvar right_node_offset = [tree].right;
+        let (value_right, tree_data_system_new) = iterate_tree(
+            tree + right_node_offset * ns_node.NODE_SIZE, tree_data_system_new
+        );
+
+        return (output=value_left + value_right, tree_data_system_new=tree_data_system_new);
     }
 }
