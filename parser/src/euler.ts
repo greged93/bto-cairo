@@ -1,16 +1,16 @@
-import { Edge, Node, orderEdges } from './types';
+import { Node } from './types';
 
-export function constructEulerTour(node: Node, tour: number[] = []) {
+export function buildEulerTour(node: Node, tour: number[] = []) {
     // visit the node
     tour.push(node.value);
 
     if (node.left) {
-        constructEulerTour(node.left, tour);
+        buildEulerTour(node.left, tour);
         // visit the current node after visiting the left subtree
         tour.push(node.value);
     }
     if (node.right) {
-        constructEulerTour(node.right, tour);
+        buildEulerTour(node.right, tour);
         // visit the current node after visiting the right subtree
         tour.push(node.value);
     }

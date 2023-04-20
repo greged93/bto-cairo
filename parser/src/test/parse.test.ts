@@ -1,227 +1,116 @@
+import { readFileSync } from 'fs';
 import { expect } from 'chai';
-import { branchSize, readJson, parseStages } from '../parse';
-import { Branch, Node } from '../types';
+import * as mocha from 'mocha';
+import { buildEulerTour } from '../euler';
+import {
+    Edge,
+    Node,
+    buildNode,
+    orderEdges,
+    edgesToAdjacencyList,
+} from '../types';
 
-let input = [
-    [
-        'ADD',
-        [
-            'MUL',
-            [
-                'ADD',
-                ['EQ', ['DICT', '', '9'], '0'],
-                ['EQ', ['DICT', '', '9'], '10'],
-            ],
-            '10',
-        ],
-        ['MUL', '0', ['EQ', ['DICT', '', '9'], '3']],
-    ],
-];
+function getInputTestData(): Edge[] {
+    return JSON.parse(readFileSync('./src/test/input_test.json', 'utf8')).edges;
+}
 
-describe('Read JSON', () => {
-    it('should read the file to the expected output', () => {
-        let expected = {
-            states: ['idle', 'ib1', 'block'],
-            combos: [['focus', 'focus', 'focus', 'focus', 'release', 'idle']],
-            perceptables: ['opponent_object_state'],
-            state_machine: {
-                inputs: ['opponent_object_state'],
-                state_function: {
-                    stages: [
-                        [
-                            'ADD',
-                            ['EQ', ['DICT', '', '18'], '12'],
-                            [
-                                'ADD',
-                                ['EQ', ['DICT', '', '18'], '26'],
-                                [
-                                    'ADD',
-                                    ['EQ', ['DICT', '', '18'], '27'],
-                                    [
-                                        'ADD',
-                                        ['EQ', ['DICT', '', '18'], '28'],
-                                        [
-                                            'ADD',
-                                            ['EQ', ['DICT', '', '18'], '29'],
-                                            [
-                                                'ADD',
-                                                [
-                                                    'EQ',
-                                                    ['DICT', '', '18'],
-                                                    '30',
-                                                ],
-                                                [
-                                                    'ADD',
-                                                    [
-                                                        'EQ',
-                                                        ['DICT', '', '18'],
-                                                        '31',
-                                                    ],
-                                                    [
-                                                        'ADD',
-                                                        [
-                                                            'EQ',
-                                                            ['DICT', '', '18'],
-                                                            '68',
-                                                        ],
-                                                        [
-                                                            'EQ',
-                                                            ['DICT', '', '18'],
-                                                            '73',
-                                                        ],
-                                                    ],
-                                                ],
-                                            ],
-                                        ],
-                                    ],
-                                ],
-                            ],
-                        ],
-                        [
-                            'ADD',
-                            [
-                                'MUL',
-                                [
-                                    'ADD',
-                                    ['EQ', ['DICT', '', '9'], '0'],
-                                    ['EQ', ['DICT', '', '9'], '10'],
-                                ],
-                                '10',
-                            ],
-                            ['MUL', '0', ['EQ', ['DICT', '', '9'], '3']],
-                        ],
-                        [
-                            'ADD',
-                            [
-                                'MUL',
-                                ['SUB', ['MEM', '', '0'], '1'],
-                                ['MEM', '', '1'],
-                            ],
-                            ['MUL', '3', ['MEM', '', '0']],
-                        ],
-                    ],
+describe('Edge', () => {
+    it('should order the edges', () => {
+        // Given
+        let expected = getInputTestData();
+        let actual = getInputTestData().sort((a, b) =>
+            Math.round(Math.random() * 2 - 1)
+        );
+
+        // When
+        orderEdges(actual);
+
+        // Then
+        expect(actual).to.deep.equal(expected);
+    });
+
+    it('should construct the adjacency list', () => {
+        // Given
+        let edges = getInputTestData();
+
+        // When
+        let actual = edgesToAdjacencyList(edges);
+        let expected = objectToMap({
+            1: [2],
+            2: [3, 6],
+            3: [4, 5],
+            6: [7],
+            7: [8, 9],
+            9: [10],
+        });
+
+        // Then
+        expect(actual).to.deep.equal(expected);
+    });
+});
+
+describe('Node', () => {
+    it('should constuct the node from edges', () => {
+        // Given
+        let edges = getInputTestData();
+        let adjacencyList = edgesToAdjacencyList(edges);
+
+        // When
+        let actual = buildNode(adjacencyList);
+        let expected: Node = {
+            value: 1,
+            left: {
+                value: 2,
+                left: {
+                    value: 3,
+                    left: { value: 4, left: null, right: null },
+                    right: { value: 5, left: null, right: null },
+                },
+                right: {
+                    value: 6,
+                    left: {
+                        value: 7,
+                        left: { value: 8, left: null, right: null },
+                        right: {
+                            value: 9,
+                            left: {
+                                value: 10,
+                                left: null,
+                                right: null,
+                            },
+                            right: null,
+                        },
+                    },
+                    right: null,
                 },
             },
+            right: null,
         };
-        expect(readJson('./src/test/input_test.json')).deep.equal(expected);
+
+        // Then
+        expect(actual).to.deep.equal(expected);
+    });
+
+    it('should construct the euler tour', () => {
+        // Given
+        let edges = getInputTestData();
+        let adjacencyList = edgesToAdjacencyList(edges);
+        let node = buildNode(adjacencyList)!;
+
+        // When
+        let actual = [];
+        buildEulerTour(node, actual);
+        let expected = [
+            1, 2, 3, 4, 3, 5, 3, 2, 6, 7, 8, 7, 9, 10, 9, 7, 6, 2, 1,
+        ];
+
+        // Then
+        expect(actual).to.deep.equal(expected);
     });
 });
 
-describe('Parse JSON', () => {
-    it('should return the expected branch count', () => {
-        let expected = 18;
-        expect(branchSize(input)).to.equal(expected);
-    });
-
-    it('should return the expected parsed branch', () => {
-        let expected: Node[] = [
-            { value: 1, left: 1, right: 12 },
-            { value: 3, left: 1, right: 10 },
-            { value: 1, left: 1, right: 5 },
-            { value: 12, left: 1, right: 3 },
-            { value: 14, left: -1, right: 1 },
-            { value: 9, left: -1, right: -1 },
-            { value: 0, left: -1, right: -1 },
-            { value: 12, left: 1, right: 3 },
-            { value: 14, left: -1, right: 1 },
-            { value: 9, left: -1, right: -1 },
-            { value: 10, left: -1, right: -1 },
-            { value: 10, left: -1, right: -1 },
-            { value: 3, left: 1, right: 2 },
-            { value: 0, left: -1, right: -1 },
-            { value: 12, left: 1, right: 3 },
-            { value: 14, left: -1, right: 1 },
-            { value: 9, left: -1, right: -1 },
-            { value: 3, left: -1, right: -1 },
-        ];
-        let [output, _] = parseStages(input);
-        expect(output).deep.equal(expected);
-    });
-
-    it('should return the expected chained trees with correct offset', () => {
-        let expected: Node[] = [
-            // first tree
-            { value: 1, left: 1, right: 5 },
-            { value: 12, left: 1, right: 3 },
-            { value: 14, left: -1, right: 1 },
-            { value: 18, left: -1, right: -1 },
-            { value: 12, left: -1, right: -1 },
-            { value: 1, left: 1, right: 5 },
-            { value: 12, left: 1, right: 3 },
-            { value: 14, left: -1, right: 1 },
-            { value: 18, left: -1, right: -1 },
-            { value: 26, left: -1, right: -1 },
-            { value: 1, left: 1, right: 5 },
-            { value: 12, left: 1, right: 3 },
-            { value: 14, left: -1, right: 1 },
-            { value: 18, left: -1, right: -1 },
-            { value: 27, left: -1, right: -1 },
-            { value: 1, left: 1, right: 5 },
-            { value: 12, left: 1, right: 3 },
-            { value: 14, left: -1, right: 1 },
-            { value: 18, left: -1, right: -1 },
-            { value: 28, left: -1, right: -1 },
-            { value: 1, left: 1, right: 5 },
-            { value: 12, left: 1, right: 3 },
-            { value: 14, left: -1, right: 1 },
-            { value: 18, left: -1, right: -1 },
-            { value: 29, left: -1, right: -1 },
-            { value: 1, left: 1, right: 5 },
-            { value: 12, left: 1, right: 3 },
-            { value: 14, left: -1, right: 1 },
-            { value: 18, left: -1, right: -1 },
-            { value: 30, left: -1, right: -1 },
-            { value: 1, left: 1, right: 5 },
-            { value: 12, left: 1, right: 3 },
-            { value: 14, left: -1, right: 1 },
-            { value: 18, left: -1, right: -1 },
-            { value: 31, left: -1, right: -1 },
-            { value: 1, left: 1, right: 5 },
-            { value: 12, left: 1, right: 3 },
-            { value: 14, left: -1, right: 1 },
-            { value: 18, left: -1, right: -1 },
-            { value: 68, left: -1, right: -1 },
-            { value: 12, left: 1, right: 3 },
-            { value: 14, left: -1, right: 1 },
-            { value: 18, left: -1, right: -1 },
-            { value: 73, left: -1, right: -1 },
-            // second tree
-            { value: 1, left: 1, right: 12 },
-            { value: 3, left: 1, right: 10 },
-            { value: 1, left: 1, right: 5 },
-            { value: 12, left: 1, right: 3 },
-            { value: 14, left: -1, right: 1 },
-            { value: 9, left: -1, right: -1 },
-            { value: 0, left: -1, right: -1 },
-            { value: 12, left: 1, right: 3 },
-            { value: 14, left: -1, right: 1 },
-            { value: 9, left: -1, right: -1 },
-            { value: 10, left: -1, right: -1 },
-            { value: 10, left: -1, right: -1 },
-            { value: 3, left: 1, right: 2 },
-            { value: 0, left: -1, right: -1 },
-            { value: 12, left: 1, right: 3 },
-            { value: 14, left: -1, right: 1 },
-            { value: 9, left: -1, right: -1 },
-            { value: 3, left: -1, right: -1 },
-            // third tree
-            { value: 1, left: 1, right: 8 },
-            { value: 3, left: 1, right: 5 },
-            { value: 2, left: 1, right: 3 },
-            { value: 13, left: -1, right: 1 },
-            { value: 0, left: -1, right: -1 },
-            { value: 1, left: -1, right: -1 },
-            { value: 13, left: -1, right: 1 },
-            { value: 1, left: -1, right: -1 },
-            { value: 3, left: 1, right: 2 },
-            { value: 3, left: -1, right: -1 },
-            { value: 13, left: -1, right: 1 },
-            { value: 0, left: -1, right: -1 },
-        ];
-        let json_input: Branch = readJson('./src/test/input_test.json')
-            .state_machine.state_function.stages;
-        let [output, offsets] = parseStages(json_input);
-        expect(output).deep.equal(expected);
-        expect(offsets).deep.equal([44, 18, 12, 0]);
-    });
-});
+function objectToMap(obj: Object): Map<number, number[]> {
+    return new Map<number, number[]>(
+        Object.entries(obj).map(([key, value]) => [parseInt(key), value])
+    );
+}
