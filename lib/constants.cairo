@@ -1,25 +1,19 @@
-%lang starknet
+mod opcodes {
+    const ADD: felt252 = 1;
+    const SUB: felt252 = 2;
+    const MUL: felt252 = 3;
+    const DIV: felt252 = 4;
+    const MOD: felt252 = 5;
+    const ABS: felt252 = 6;
+    const SQRT: felt252 = 7;
+    const POW: felt252 = 8;
 
-namespace ns_opcodes {
-    const ADD = 1;
-    const SUB = 2;
-    const MUL = 3;
-    const DIV = 4;
-    const MOD = 5;
-    const ABS = 6;
-    const SQRT = 7;
-    const POW = 8;
+    const IS_NN: felt252 = 9;
+    const IS_LE: felt252 = 10;
+    const NOT: felt252 = 11;
+    const EQ: felt252 = 12;
 
-    const IS_NN = 9;
-    const IS_LE = 10;
-    const NOT = 11;
-    const EQ = 12;
-
-    const MEM = 13;
-    const DICT = 14;
-    const FUNC = 15;
-}
-
-namespace ns_tree {
-    const TREE_SIZE = 3;
+    const MEM: felt252 = 13;
+    const DICT: felt252 = 14;
+    const FUNC: felt252 = 15;
 }
