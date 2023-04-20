@@ -4,7 +4,7 @@
         "target": "es6",
         "jsx": "preserve"
     },
-    "include": ["/src/test/**/*.test.ts", "src/parse.tsx"],
+    "include": ["/src/test/**/*.test.ts", "/src/euler.ts"],
     "exclude": [
         "node_modules"
     ]
